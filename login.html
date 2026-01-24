@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Authorized Access</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/styles.min.css">
+    <style>
+        * {
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e0e0e0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 255, 136, 0.03) 0px,
+                    rgba(0, 255, 136, 0.03) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            pointer-events: none;
+            animation: scanlines 8s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+
+        .login-container {
+            background: rgba(20, 20, 30, 0.95);
+            border-radius: 12px;
+            padding: 50px 45px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.8),
+                inset 0 0 30px rgba(0, 255, 136, 0.05);
+            max-width: 450px;
+            width: 100%;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(0, 255, 136, 0.1), transparent);
+            border-radius: 12px;
+            pointer-events: none;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .security-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .login-title {
+            color: #00ff88;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .login-subtitle {
+            color: #b0b0b0;
+            font-size: 13px;
+            margin-bottom: 5px;
+            font-style: italic;
+        }
+
+        .security-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 3px solid #ffc107;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 25px;
+            font-size: 12px;
+            color: #ffcc00;
+            line-height: 1.5;
+        }
+
+        .security-notice strong {
+            color: #ffc107;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            padding: 14px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        .form-control::placeholder {
+            color: #707070;
+        }
+
+        .form-control:focus {
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2), inset 0 0 5px rgba(0, 255, 136, 0.05);
+            background: rgba(255, 255, 255, 0.08);
+            outline: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .form-group label {
+            color: #00ff88;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            z-index: 3;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, #00ff88 0%, #00dd77 100%);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .back-link a {
+            color: #00ff88;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-link a:hover {
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .error-message {
+            display: none;
+            color: #ff4444;
+            font-size: 13px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(255, 68, 68, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #ff4444;
+            font-weight: bold;
+            position: relative;
+            z-index: 3;
+        }
+
+        .success-message {
+            display: none;
+            color: #00ff88;
+            font-size: 13px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #00ff88;
+            font-weight: bold;
+            position: relative;
+            z-index: 3;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 40px 30px;
+            }
+
+            .login-title {
+                font-size: 24px;
+            }
+
+            .security-icon {
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="security-icon">🔐</div>
+            <h1 class="login-title">AUTHORIZED ACCESS ONLY</h1>
+            <p class="login-subtitle">Restricted Zone • Proceed with Caution</p>
+        </div>
+
+        <div class="security-notice">
+            <strong>⚠️ WARNING:</strong> This is an unauthorized access point. Only authorized personnel should proceed. Unauthorized access attempts are monitored and logged.
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">User ID</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter your user ID" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Access Code</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter access code" required>
+            </div>
+
+            <button type="submit" class="login-btn">GRANT ACCESS</button>
+        </form>
+
+        <div class="back-link">
+            <a href="index.html"><i class="fa fa-arrow-left"></i> Return to Public Zone</a>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            // Demo credentials
+            const validUsername = 'vashi';
+            const validPassword = '12345';
+
+            // Clear previous messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+
+            // Simple validation
+            if (username.trim() === '' || password === '') {
+                errorMessage.textContent = '⚠️ ERROR: User ID and Access Code required. Please complete all fields.';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            // Check credentials
+            if (username.toLowerCase() === validUsername && password === validPassword) {
+                // Store login info in session storage
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('username', username);
+
+                successMessage.textContent = '✓ ACCESS GRANTED. Welcome to the secured zone. Redirecting...';
+                successMessage.style.display = 'block';
+
+                // Redirect to games page after 1.5 seconds
+                setTimeout(() => {
+                    window.location.href = 'games.html';
+                }, 1500);
+            } else {
+                errorMessage.textContent = '✗ ACCESS DENIED: Invalid User ID or Access Code. Unauthorized access attempt logged.';
+                errorMessage.style.display = 'block';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                window.location.href = 'games.html';
+            }
+        });
+    </script>
+</body>
+
+</html>

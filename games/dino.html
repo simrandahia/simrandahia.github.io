@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dino Run (Superman)</title>
+  <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+  <style>
+    :root {
+      --w: 900; /* logical width for internal canvas */
+      --h: 280; /* logical height */
+      --scale: 1; /* device scaling factor computed at runtime */
+      --bg1: #102030;
+      --bg2: #0a1628;
+      --ground: #1f2b3e;
+      --accent: #ffd93d;
+    }
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--bg2), var(--bg1));
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrap {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      padding: calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-right) + 12px) calc(env(safe-area-inset-bottom) + 12px) calc(env(safe-area-inset-left) + 12px);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .title { font-weight:800; letter-spacing:0.4px; }
+    .score { font-weight:700; color: var(--accent); }
+    .canvas-holder { flex: 1; display:flex; align-items:center; justify-content:center; }
+    canvas { display:block; width:100%; height:100%; border-radius:10px; background: #0c172b; box-shadow: inset 0 0 18px rgba(0,0,0,0.6); }
+    .controls { display:flex; gap:10px; justify-content:center; margin-top:10px; }
+    .controls .btn { font-weight:700; }
+    .legend { text-align:center; font-size:13px; color:#cfd7ff; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">🏃 Dino Run (Superman)</div>
+      <div class="score">Score: <span id="score">0</span></div>
+    </div>
+    <div class="canvas-holder">
+      <canvas id="cvs" aria-label="Dino Runner"></canvas>
+    </div>
+    <div class="controls">
+      <button id="jump" class="btn btn-primary btn-sm">Jump</button>
+      <button id="restart" class="btn btn-warning btn-sm">Restart</button>
+      <a class="btn btn-secondary btn-sm" href="../games.html">Back to Games</a>
+    </div>
+    <p class="legend">Space/Up/Touch to jump. Avoid obstacles. </p>
+  </div>
+
+  <script>
+    const cvs = document.getElementById('cvs');
+    const ctx = cvs.getContext('2d');
+    let scaleX = 1, scaleY = 1;
+    let viewW = 900, viewH = 280;
+    let groundY = 220;
+    
+    // Speed control via URL parameters: ?speed=3&accel=0.00025&max=6
+    const params = new URLSearchParams(window.location.search);
+    const speedBaseParam = parseFloat(params.get('speed'));
+    const accelParam = parseFloat(params.get('accel'));
+    const maxParam = parseFloat(params.get('max'));
+    let speedBase = Number.isFinite(speedBaseParam) ? speedBaseParam : 2; // slower default
+    let accelCoef = Number.isFinite(accelParam) ? accelParam : 0.00010;   // gentler ramp
+    let maxSpeed = Number.isFinite(maxParam) ? maxParam : 4;              // lower cap
+
+    // Scale canvas to the available viewport space for crisp rendering
+    function fitCanvas() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const rect = cvs.getBoundingClientRect();
+      const cssW = Math.max(320, Math.floor(rect.width));
+      const cssH = Math.max(180, Math.floor(rect.height));
+      cvs.width = Math.floor(cssW * dpr);
+      cvs.height = Math.floor(cssH * dpr);
+      scaleX = dpr; scaleY = dpr;
+      ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+      viewW = cssW; viewH = cssH;
+      groundY = Math.max(100, viewH - 60);
+    }
+    fitCanvas();
+    // Debounced resize: keep state, do not hard reset to avoid jump glitches
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const prevGround = groundY;
+        const prevPlayerY = player ? player.y : null;
+        fitCanvas();
+        if (player) {
+          // Keep player relative to ground
+          const offsetFromGround = prevGround - (prevPlayerY ?? groundY);
+          player.y = Math.max(0, groundY - offsetFromGround);
+          if (player.y >= groundY) { player.y = groundY; player.vy = 0; player.onGround = true; }
+        }
+      }, 120);
+    });
+
+    // Load runner image (same sticker used in snake head)
+    const runnerImg = new Image();
+    runnerImg.src = '../assets/img/superman-head.png';
+    let runnerReady = false;
+    runnerImg.onload = () => runnerReady = true;
+
+    // Game constants
+    const GRAVITY = 0.5;   // softer gravity for longer airtime
+    const JUMP_V = -10;    // slower initial jump
+    let speed = speedBase; // base scroll speed from URL or default
+
+    // Game state
+    let player, obstacles, score, best, running, tLast;
+    let isHoldingJump = false; // hold to extend jump
+    let jumpHoldTime = 0;
+    const jumpHoldMax = 220; // ms
+
+    function reset() {
+      player = { x: 60, y: groundY, w: 44, h: 44, vy: 0, onGround: true };
+      obstacles = [];
+      score = 0;
+      running = true;
+      tLast = performance.now();
+      speed = speedBase;
+      isHoldingJump = false;
+      jumpHoldTime = 0;
+      document.getElementById('score').textContent = score;
+      spawnObstacle();
+      requestAnimationFrame(loop);
+    }
+
+    function spawnObstacle() {
+      const gapMin = 650, gapVar = 550; // much more space for easier play
+      const xStart = viewW; // CSS pixel width
+      const height = 24 + Math.floor(Math.random() * 8); // smaller cactus
+      const width = 16 + Math.floor(Math.random() * 6);
+      const type = 'single';
+      obstacles.push({ x: xStart + Math.random() * (gapVar) + gapMin, y: groundY, w: width, h: height, type });
+    }
+
+    function jump() {
+      if (!running) return;
+      if (player.onGround) {
+        player.vy = JUMP_V;
+        player.onGround = false;
+        isHoldingJump = true;
+        jumpHoldTime = 0;
+      }
+    }
+
+    function update(dt) {
+      // increase speed slowly using configured acceleration
+      speed += dt * accelCoef;
+      // cap max speed to keep it comfortable
+      if (speed > maxSpeed) speed = maxSpeed;
+
+      // player physics
+      player.vy += GRAVITY;
+      if (isHoldingJump && player.vy < 0 && jumpHoldTime < jumpHoldMax) {
+        player.vy -= 0.35; // sustain upward motion while holding
+        jumpHoldTime += dt;
+      }
+      player.y += player.vy;
+      if (player.y >= groundY) { player.y = groundY; player.vy = 0; player.onGround = true; isHoldingJump = false; }
+
+      // obstacles
+      const scroll = speed;
+      obstacles.forEach(o => { o.x -= scroll; });
+      // recycle
+      if (obstacles.length && obstacles[0].x + obstacles[0].w < -10) {
+        obstacles.shift(); score += 1; document.getElementById('score').textContent = score; spawnObstacle();
+      }
+
+      // spawn if last obstacle is close enough
+      const last = obstacles[obstacles.length-1];
+      if (last && last.x < viewW - 400) spawnObstacle();
+
+      // collisions (AABB)
+      for (const o of obstacles) {
+        const px = player.x, py = player.y - player.h; // top-left of player
+        const pw = player.w, ph = player.h;
+        const ox = o.x, oy = o.y - o.h; const ow = o.w, oh = o.h;
+        if (px < ox + ow && px + pw > ox && py < oy + oh && py + ph > oy) {
+          running = false; break;
+        }
+      }
+    }
+
+    function drawBackground() {
+      // ground line
+      ctx.fillStyle = '#132238';
+      ctx.fillRect(0, 0, viewW, viewH);
+      ctx.strokeStyle = '#1f2b3e';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY + 2);
+      ctx.lineTo(viewW, groundY + 2);
+      ctx.stroke();
+
+      // distant clouds
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      for (let i=0;i<4;i++) {
+        const cx = (i*220 + (Date.now()/40 % 220));
+        ctx.beginPath();
+        ctx.arc(cx, 70 + (i%2)*12, 22, 0, Math.PI*2);
+        ctx.arc(cx+18, 64 + (i%2)*14, 18, 0, Math.PI*2);
+        ctx.arc(cx+36, 70 + (i%2)*12, 20, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    function drawPlayer() {
+      const x = player.x, y = player.y;
+      const w = player.w, h = player.h;
+      ctx.save();
+      // draw runner (sticker image) centered on body box
+      if (runnerReady) {
+        ctx.drawImage(runnerImg, x - w/2 + w*0.1, y - h - h*0.1, w*0.9, h*0.9);
+      } else {
+        ctx.fillStyle = '#ffd93d';
+        ctx.fillRect(x, y - h, w, h);
+      }
+      // shadow under player
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = '#000';
+      const shw = 34; const shh = 6;
+      ctx.fillRect(x + w/2 - shw/2, y + 2, shw, shh);
+      ctx.restore();
+    }
+
+    function drawObstacle(o) {
+      ctx.save();
+      ctx.fillStyle = '#9fb3c8';
+      // simple cactus pillar(s)
+      ctx.fillRect(o.x, o.y - o.h, o.w, o.h);
+      if (o.type === 'double') {
+        ctx.fillRect(o.x + o.w + 12, o.y - Math.max(24, o.h - 10), Math.max(18, o.w - 6), Math.max(24, o.h - 10));
+      }
+      // top knobs
+      ctx.fillStyle = '#b7c7d8';
+      ctx.fillRect(o.x - 3, o.y - o.h - 6, o.w + 6, 6);
+      ctx.restore();
+    }
+
+    function drawGameOver() {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(0,0,viewW, viewH);
+      ctx.fillStyle = '#ffd93d';
+      ctx.font = 'bold 28px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('Game Over', (viewW)/2, Math.max(120, groundY - 80));
+      ctx.fillStyle = '#fff';
+      ctx.font = '600 16px system-ui';
+      ctx.fillText('Press Restart or tap to try again', (viewW)/2, Math.max(150, groundY - 50));
+      ctx.restore();
+    }
+
+    function render() {
+      drawBackground();
+      drawPlayer();
+      obstacles.forEach(drawObstacle);
+      if (!running) drawGameOver();
+    }
+
+    function loop(ts) {
+      if (!running) { render(); return; }
+      const dt = (ts - tLast) || 16;
+      tLast = ts;
+      update(dt);
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    // Inputs
+    window.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === ' ' || k === 'arrowup' || k === 'w') {
+        e.preventDefault();
+        if (player.onGround) jump();
+        isHoldingJump = true;
+      }
+    }, { passive: false });
+    window.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === ' ' || k === 'arrowup' || k === 'w') {
+        e.preventDefault();
+        isHoldingJump = false;
+      }
+    }, { passive: false });
+    cvs.addEventListener('pointerdown', () => { jump(); isHoldingJump = true; });
+    cvs.addEventListener('pointerup', () => { isHoldingJump = false; });
+    const jumpBtn = document.getElementById('jump');
+    jumpBtn.addEventListener('pointerdown', () => { jump(); isHoldingJump = true; });
+    jumpBtn.addEventListener('pointerup', () => { isHoldingJump = false; });
+    document.getElementById('restart').addEventListener('click', reset);
+
+    // Start
+    reset();
+  </script>
+</body>
+</html>

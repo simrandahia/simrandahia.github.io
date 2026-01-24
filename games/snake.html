@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Superman Snake</title>
+  <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+  <style>
+    :root {
+      --tile: 26;
+      --cols: 18; /* tuned for iPad portrait */
+      --rows: 22;
+      --bg1: #0a0f1f;
+      --bg2: #11162a;
+      --accent: #ffd93d; /* yellow */
+      --hero-blue: #2b59c3;
+      --hero-red: #d7263d;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 30% 20%, var(--bg2), var(--bg1) 60%);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .game-wrap {
+      width: min(95vw, calc(var(--tile) * var(--cols) + 24px));
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .title {
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+    .score {
+      font-weight: 700;
+      color: var(--accent);
+    }
+    canvas {
+      width: calc(var(--tile) * var(--cols));
+      height: calc(var(--tile) * var(--rows));
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.04),
+        rgba(255,255,255,0.04) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+      border-radius: 10px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+      display: block;
+      margin: 0 auto;
+      image-rendering: pixelated;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      max-width: 360px;
+      margin: 12px auto 0;
+      user-select: none;
+    }
+    .controls button {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    .controls .spacer { visibility: hidden; }
+    .legend {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 13px;
+      color: #cfd7ff;
+    }
+    .btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn-row .btn {
+      font-weight: 700;
+    }
+    @media (min-width: 1025px) {
+      :root { --cols: 22; --rows: 24; --tile: 24; }
+    }
+    @media (max-width: 767px) {
+      :root { --cols: 14; --rows: 20; --tile: 26; }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-wrap">
+    <div class="topbar">
+      <div class="title">🦸 Superman Snake</div>
+      <div class="score">Score: <span id="score">0</span></div>
+    </div>
+    <canvas id="game" width="520" height="572" aria-label="Superman Snake"></canvas>
+    <div class="btn-row">
+      <button id="restart" class="btn btn-warning btn-sm">Restart</button>
+      <a class="btn btn-secondary btn-sm" href="../games.html">Back to Games</a>
+    </div>
+    <div class="controls" aria-label="Touch controls">
+      <button class="btn" data-dir="up">⬆️</button>
+      <button class="btn spacer" disabled>•</button>
+      <button class="btn" data-dir="right">➡️</button>
+      <button class="btn" data-dir="left">⬅️</button>
+      <button class="btn spacer" disabled>•</button>
+      <button class="btn" data-dir="down">⬇️</button>
+    </div>
+    <p class="legend">Use arrows/WASD or touch buttons. Eat ⭐ to grow.</p>
+  </div>
+
+  <script>
+    // Grid config
+    const TILE = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tile'));
+    const COLS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols'));
+    const ROWS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows'));
+
+    const cvs = document.getElementById('game');
+    // Ensure internal canvas resolution matches CSS pixels for crisp drawing
+    cvs.width = TILE * COLS;
+    cvs.height = TILE * ROWS;
+    const ctx = cvs.getContext('2d');
+
+    // Load head image (user should place sticker at ../assets/img/superman-head.png)
+    const headImg = new Image();
+    headImg.src = '../assets/img/superman-head.png';
+    let headImgReady = false;
+    headImg.onload = () => headImgReady = true;
+
+    // Game state
+    let snake, dir, nextDir, food, score, tickMs, running, timer;
+
+    const DIRS = {
+      up: { x: 0, y: -1, angle: -Math.PI/2 },
+      down: { x: 0, y: 1, angle: Math.PI/2 },
+      left: { x: -1, y: 0, angle: Math.PI },
+      right: { x: 1, y: 0, angle: 0 },
+    };
+
+    function randCell() {
+      return { x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS) };
+    }
+
+    function cellEq(a,b){ return a.x===b.x && a.y===b.y; }
+
+    function placeFood() {
+      do { food = randCell(); }
+      while (snake.some(s => cellEq(s, food)));
+    }
+
+    function reset() {
+      score = 0;
+      document.getElementById('score').textContent = score;
+      tickMs = 140; // base speed
+      running = true;
+      const mid = { x: Math.floor(COLS/2), y: Math.floor(ROWS/2) };
+      snake = [ mid, { x: mid.x-1, y: mid.y }, { x: mid.x-2, y: mid.y } ];
+      dir = DIRS.right;
+      nextDir = dir;
+      placeFood();
+      clearInterval(timer);
+      timer = setInterval(tick, tickMs);
+      draw();
+    }
+
+    function gameOver() {
+      running = false;
+      clearInterval(timer);
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(0,0,cvs.width,cvs.height);
+      ctx.fillStyle = '#ffd93d';
+      ctx.font = 'bold 28px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('Game Over', cvs.width/2, cvs.height/2 - 10);
+      ctx.fillStyle = '#fff';
+      ctx.font = '600 16px system-ui';
+      ctx.fillText('Press Restart to try again', cvs.width/2, cvs.height/2 + 18);
+      ctx.restore();
+    }
+
+    function tick() {
+      if (!running) return;
+      dir = nextDir; // apply scheduled turn once per tick
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      // wrap around walls
+      if (head.x < 0) head.x = COLS - 1;
+      if (head.x >= COLS) head.x = 0;
+      if (head.y < 0) head.y = ROWS - 1;
+      if (head.y >= ROWS) head.y = 0;
+      // self collision
+      if (snake.some((s, i) => i>0 && cellEq(s, head))) {
+        gameOver();
+        return;
+      }
+      snake.unshift(head);
+      if (cellEq(head, food)) {
+        score += 1;
+        document.getElementById('score').textContent = score;
+        // speed up slightly
+        tickMs = Math.max(80, tickMs - 4);
+        clearInterval(timer); timer = setInterval(tick, tickMs);
+        placeFood();
+      } else {
+        snake.pop();
+      }
+      draw();
+    }
+
+    function drawBackground() {
+      // subtle grid
+      ctx.fillStyle = '#0d1326';
+      ctx.fillRect(0,0,cvs.width,cvs.height);
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      for (let x=0; x<=COLS; x++) {
+        ctx.beginPath(); ctx.moveTo(x*TILE,0); ctx.lineTo(x*TILE,cvs.height); ctx.stroke();
+      }
+      for (let y=0; y<=ROWS; y++) {
+        ctx.beginPath(); ctx.moveTo(0,y*TILE); ctx.lineTo(cvs.width,y*TILE); ctx.stroke();
+      }
+    }
+
+    function drawFood() {
+      const px = food.x*TILE + TILE/2;
+      const py = food.y*TILE + TILE/2;
+      // star
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.fillStyle = '#ffd93d';
+      ctx.strokeStyle = '#caa42a';
+      ctx.lineWidth = 2;
+      const spikes = 5, outer = TILE*0.42, inner = TILE*0.20;
+      let rot = Math.PI/2 * 3; let x=0; let y=0; const step = Math.PI/spikes;
+      ctx.beginPath(); ctx.moveTo(0, -outer);
+      for(let i=0;i<spikes;i++){
+        x=Math.cos(rot)*outer; y=Math.sin(rot)*outer; ctx.lineTo(x,y); rot+=step;
+        x=Math.cos(rot)*inner; y=Math.sin(rot)*inner; ctx.lineTo(x,y); rot+=step;
+      }
+      ctx.lineTo(0,-outer); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawHeroHead(cell, dirAngle) {
+      const x = cell.x*TILE; const y = cell.y*TILE;
+      ctx.save();
+      ctx.translate(x + TILE/2, y + TILE/2);
+      ctx.rotate(dirAngle);
+      if (headImgReady) {
+        const s = TILE*0.9;
+        ctx.drawImage(headImg, -s/2, -s/2, s, s);
+      } else {
+        // fallback: circle head
+        ctx.fillStyle = '#f4c4a0';
+        ctx.beginPath(); ctx.arc(0,0,TILE*0.4,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawHeroBody(cell) {
+      const x = cell.x*TILE; const y = cell.y*TILE;
+      // torso square
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--hero-blue').trim();
+      ctx.fillRect(x+3, y+3, TILE-6, TILE-6);
+      // cape triangle
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--hero-red').trim();
+      ctx.beginPath();
+      ctx.moveTo(x+TILE-4, y+4);
+      ctx.lineTo(x+TILE-4, y+TILE-4);
+      ctx.lineTo(x+TILE-12, y+TILE/2);
+      ctx.closePath();
+      ctx.fill();
+      // emblem (yellow diamond)
+      ctx.fillStyle = '#ffd93d';
+      ctx.beginPath();
+      ctx.moveTo(x+TILE/2, y+8);
+      ctx.lineTo(x+TILE/2+6, y+TILE/2);
+      ctx.lineTo(x+TILE/2, y+TILE-8);
+      ctx.lineTo(x+TILE/2-6, y+TILE/2);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw() {
+      drawBackground();
+      // draw food first
+      drawFood();
+      // draw body (skip head index 0)
+      for (let i=1;i<snake.length;i++) drawHeroBody(snake[i]);
+      // draw head with image rotated
+      drawHeroHead(snake[0], dir.angle);
+    }
+
+    function scheduleDir(newDir) {
+      // prevent reverse
+      if ((dir.x + newDir.x === 0) && (dir.y + newDir.y === 0)) return;
+      nextDir = newDir;
+    }
+
+    // Keyboard controls
+    window.addEventListener('keydown', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'arrowup' || k === 'w') scheduleDir(DIRS.up);
+      else if (k === 'arrowdown' || k === 's') scheduleDir(DIRS.down);
+      else if (k === 'arrowleft' || k === 'a') scheduleDir(DIRS.left);
+      else if (k === 'arrowright' || k === 'd') scheduleDir(DIRS.right);
+    });
+
+    // Touch controls
+    document.querySelectorAll('.controls [data-dir]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const d = btn.getAttribute('data-dir');
+        scheduleDir(DIRS[d]);
+      });
+    });
+
+    // Restart
+    document.getElementById('restart').addEventListener('click', reset);
+
+    // Start
+    reset();
+  </script>
+</body>
+</html>
