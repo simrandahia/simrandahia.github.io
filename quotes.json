@@ -1,0 +1,291 @@
+{
+  "fallback": {
+    "script": "Before form",
+    "main": "Pattern waits.",
+    "creator": "",
+    "source": ""
+  },
+  "quotes": {
+    "chaos": [
+      {
+        "script": "Before form",
+        "main": "Pattern waits.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Before form",
+        "main": "There is only becoming.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Chaos",
+        "main": "A secret order is already there.",
+        "creator": "Carl Jung",
+        "source": ""
+      },
+      {
+        "script": "Chaos within",
+        "main": "A dancing star begins here.",
+        "creator": "Friedrich Nietzsche (Thus Spoke Zarathustra)",
+        "source": ""
+      },
+      {
+        "script": "More is different",
+        "main": "Scale changes the laws.",
+        "creator": "P. W. Anderson",
+        "source": ""
+      },
+      {
+        "script": "ਅੰਦਰਿ ਰਤਨ ਜਵੇਹਰ ਮਾਣਿਕ",
+        "main": "The treasure is already within.",
+        "creator": "Sri Guru Granth Sahib",
+        "source": ""
+      },
+      {
+        "script": "नेति नेति",
+        "main": "Not this. Not that. Still, something remains.",
+        "creator": "Bṛhadāraṇyaka Upaniṣad",
+        "source": ""
+      },
+      {
+        "script": "Unformed",
+        "main": "The pattern has not yet chosen itself.",
+        "creator": "",
+        "source": ""
+      }
+    ],
+    "attractor": [
+      {
+        "script": "Attractor",
+        "main": "Everything returns differently.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Return",
+        "main": "The path changes. The pull remains.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Fate",
+        "main": "The conscious moves the orbit.",
+        "creator": "Carl Jung",
+        "source": ""
+      },
+      {
+        "script": "Becoming",
+        "main": "Become who you are.",
+        "creator": "Friedrich Nietzsche",
+        "source": ""
+      },
+      {
+        "script": "तत्त्वमसि",
+        "main": "That which draws you is also you",
+        "creator": "Chāndogya Upaniṣad",
+        "source": ""
+      },
+      {
+        "script": "ਹੁਕਮੈ ਅੰਦਰਿ ਸਭੁ ਕੋ",
+        "main": "Everything moves within order",
+        "creator": "Sri Guru Granth Sahib",
+        "source": ""
+      },
+      {
+        "script": "Pull",
+        "main": "Some centers are invisible",
+        "creator": "",
+        "source": ""
+      }
+    ],
+    "network": [
+      {
+        "script": "No center",
+        "main": "Still, a pattern",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Sync",
+        "main": "Order emerges without command.",
+        "creator": "Steven Strogatz",
+        "source": ""
+      },
+      {
+        "script": "Projection",
+        "main": "What we meet outside reveals the inside",
+        "creator": "Carl Jung",
+        "source": ""
+      },
+      {
+        "script": "Friendship",
+        "main": "Connection asks for nothing.",
+        "creator": "Osho",
+        "source": ""
+      },
+      {
+        "script": "ਸਭਨਾ ਜੀਆ ਕਾ ਇਕੁ ਦਾਤਾ",
+        "main": "Many lives. One source.",
+        "creator": "Sri Guru Granth Sahib",
+        "source": ""
+      },
+      {
+        "script": "सर्वं खल्विदं ब्रह्म",
+        "main": "All this is Brahman.",
+        "creator": "Chāndogya Upaniṣad",
+        "source": ""
+      }
+    ],
+    "galaxy": [
+      {
+        "script": "यथा पिण्डे तथा ब्रह्माण्डे",
+        "main": "The cosmos repeats in the self.",
+        "creator": "Indic philosophical tradition",
+        "source": ""
+      },
+      {
+        "script": "ਜੋ ਬ੍ਰਹਮੰਡੇ ਸੋਈ ਪਿੰਡੇ ਜੋ ਖੋਜੈ ਸੋ ਪਾਵੈ",
+        "main": "The universe lives within the body.",
+        "creator": "Sri Guru Granth Sahib",
+        "source": ""
+      },
+      {
+        "script": "सर्वं खल्विदं ब्रह्म",
+        "main": "All this is Brahman.",
+        "creator": "Chāndogya Upaniṣad",
+        "source": ""
+      },
+      {
+        "script": "पूर्णमदः पूर्णमिदम्",
+        "main": "The whole remains whole.",
+        "creator": "Īśa/Bṛhadāraṇyaka Upaniṣad tradition",
+        "source": ""
+      },
+      {
+        "script": "More is different",
+        "main": "The many become another kind of one.",
+        "creator": "P. W. Anderson",
+        "source": ""
+      },
+      {
+        "script": "Miracle",
+        "main": "Be realistic. Plan for a miracle.",
+        "creator": "Osho",
+        "source": ""
+      }
+    ],
+    "flock": [
+      {
+        "script": "Collective motion",
+        "main": "Many bodies. One gesture.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Flock",
+        "main": "No leader. Still, direction.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Creativity",
+        "main": "Rebellion becomes movement.",
+        "creator": "Osho",
+        "source":""
+      },
+      {
+        "script": "तत्त्वमसि",
+        "main": "You are that.",
+        "creator": "Chāndogya Upaniṣad",
+        "source":""
+      }
+    ],
+    "dna": [
+      {
+        "script": "अहं ब्रह्मास्मि",
+        "main": "The divine is within.",
+        "creator": "Bṛhadāraṇyaka Upaniṣad",
+        "source":""
+      },
+      {
+        "script": "Become",
+        "main": "One becomes what one is.",
+        "creator": "Friedrich Nietzsche",
+        "source":""
+      }
+    ],
+    "waves": [
+      {
+        "script": "Interference",
+        "main": "Every signal carries another.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Sync",
+        "main": "The universe has a hidden beat.",
+        "creator": "Steven Strogatz",
+        "source": ""
+      }
+    ],
+    "pendulum": [
+      {
+        "script": "Freedom",
+        "main": "Life begins where fear ends.",
+        "creator": "Osho",
+        "source": ""
+      },
+      {
+        "script": "Becoming",
+        "main": "The swing teaches the center.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Courage",
+        "main": "The unknown is where life begins.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "मृत्योर्मा अमृतं गमय",
+        "main": "Move toward the deathless.",
+        "creator": "Bṛhadāraṇyaka Upaniṣad",
+        "source": ""
+      },
+      {
+        "script": "ਨਿਰਭਉ",
+        "main": "Without fear.",
+        "creator": "Sri Guru Granth Sahib",
+        "source": ""
+      }
+    ],
+    "tree": [
+      {
+        "script": "Emergence",
+        "main": "The branch remembers the root.",
+        "creator": "",
+        "source": ""
+      },
+      {
+        "script": "Growth",
+        "main": "The whole exceeds its parts.",
+        "creator": "Aristotelian / Gestalt tradition",
+        "source": ""      },
+      {
+        "script": "Creativity",
+        "main": "To create is to love life.",
+        "creator": "Osho",
+        "source": ""
+      },
+      {
+        "script": "Dancing star",
+        "main": "From chaos, a star is born.",
+        "creator": "Friedrich Nietzsche",
+        "source": ""
+      }
+    ]
+  }
+}

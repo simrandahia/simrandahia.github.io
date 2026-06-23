@@ -1,0 +1,302 @@
+:root {
+  --bg: #f3eee8;
+  --bg-deep: #ebe3da;
+  --ink: #111111;
+  --muted: rgba(17, 17, 17, 0.54);
+  --faint: rgba(17, 17, 17, 0.18);
+
+  --pad-x: clamp(18px, 4vw, 56px);
+  --pad-y: clamp(10px, 2vh, 24px);
+  --top-h: clamp(2px, 0.8vh, 10px);
+  --footer-h: clamp(38px, 6vh, 58px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background:
+    radial-gradient(circle at 50% 41%, rgba(255, 255, 255, 0.78), rgba(243, 238, 232, 0) 45%),
+    linear-gradient(180deg, var(--bg), var(--bg-deep));
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow: hidden;
+}
+
+.site {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: var(--top-h) minmax(0, 1fr) var(--footer-h);
+  padding: var(--pad-y) var(--pad-x);
+}
+
+.topbar {
+  min-height: 0;
+}
+
+.hero {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  justify-items: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: visible;
+}
+
+.quote-block {
+  width: min(1180px, 94vw);
+  padding-top: clamp(0px, 1vh, 12px);
+  position: relative;
+  z-index: 2;
+}
+
+.quote-script {
+  margin: 0 0 clamp(6px, 1.1vh, 16px);
+  min-height: 1.12em;
+  font-family: "Noto Sans Gurmukhi", Inter, sans-serif;
+  font-size: clamp(26px, 4.2vh, 54px);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  color: var(--muted);
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+h1 {
+  margin: 0;
+  max-width: min(1180px, 94vw);
+  font-size: clamp(34px, 8.4vh, 106px);
+  line-height: 0.88;
+  font-weight: 300;
+  letter-spacing: -0.085em;
+  text-wrap: balance;
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.quote-credit {
+  min-height: 1.4em;
+  margin: clamp(8px, 1.2vh, 14px) clamp(6px, 1vw, 12px) 0 auto;
+  max-width: min(420px, 78vw);
+  text-align: right;
+  color: rgba(17, 17, 17, 0.44);
+  font-size: clamp(9px, 1.25vh, 12px);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.quote-credit:empty {
+  display: none;
+}
+
+.quote-credit a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.18);
+}
+
+.quote-credit a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.quote-changing #quote-script,
+.quote-changing #quote-main,
+.quote-changing #quote-credit {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.field {
+  width: min(68vh, 88vw, 820px);
+  width: min(68dvh, 88vw, 820px);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  margin-top: clamp(-38px, -4vh, -10px);
+  position: relative;
+  z-index: 1;
+}
+
+#swarm {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+.footer-links {
+  min-height: var(--footer-h);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(10px, 2vw, 28px);
+  flex-wrap: wrap;
+  padding-top: 6px;
+  position: relative;
+  z-index: 3;
+}
+
+.footer-links a {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: clamp(8px, 1.15vh, 10px);
+  font-weight: 900;
+  letter-spacing: clamp(0.12em, 0.28vw, 0.24em);
+  text-transform: uppercase;
+  opacity: 0.54;
+  transition: opacity 180ms ease, transform 180ms ease;
+  white-space: nowrap;
+}
+
+.footer-links a:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.footer-name {
+  opacity: 0.82 !important;
+}
+
+/* Short laptop screens */
+@media (max-height: 760px) {
+  :root {
+    --pad-y: 10px;
+    --footer-h: 42px;
+  }
+
+  .quote-script {
+    font-size: clamp(24px, 4vh, 42px);
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-size: clamp(32px, 7.4vh, 78px);
+  }
+
+  .quote-credit {
+    margin-top: 7px;
+    font-size: 8px;
+  }
+
+  .field {
+    width: min(62vh, 84vw, 700px);
+    width: min(62dvh, 84vw, 700px);
+    margin-top: -24px;
+  }
+
+  .footer-links a {
+    font-size: 8px;
+  }
+}
+
+/* Phones and narrow screens */
+@media (max-width: 760px) {
+  :root {
+    --pad-x: 16px;
+    --pad-y: 14px;
+    --top-h: 2px;
+    --footer-h: clamp(54px, 9vh, 76px);
+  }
+
+  .quote-block {
+    padding-top: 10px;
+  }
+
+  .quote-script {
+    font-size: clamp(24px, 7vw, 38px);
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    max-width: 96vw;
+    font-size: clamp(36px, 12vw, 68px);
+    letter-spacing: -0.075em;
+  }
+
+  .quote-credit {
+    max-width: 84vw;
+    margin-top: 8px;
+    margin-right: 4px;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+  }
+
+  .field {
+    width: min(58vh, 98vw);
+    width: min(58dvh, 98vw);
+    margin-top: -6px;
+  }
+
+  .footer-links {
+    gap: 10px 16px;
+    align-content: flex-end;
+    align-items: flex-end;
+  }
+
+  .footer-links a {
+    font-size: 8px;
+    letter-spacing: 0.16em;
+  }
+}
+
+/* Very short phones / landscape phones */
+@media (max-height: 620px) {
+  :root {
+    --pad-y: 8px;
+    --footer-h: 38px;
+  }
+
+  .quote-script {
+    font-size: clamp(18px, 4.8vh, 28px);
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-size: clamp(28px, 8vh, 52px);
+  }
+
+  .quote-credit {
+    margin-top: 5px;
+    font-size: 7px;
+  }
+
+  .field {
+    width: min(52vh, 72vw, 520px);
+    width: min(52dvh, 72vw, 520px);
+    margin-top: -18px;
+  }
+
+  .footer-links {
+    gap: 8px 14px;
+  }
+
+  .footer-links a {
+    font-size: 7.5px;
+    letter-spacing: 0.13em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quote-script,
+  h1,
+  .quote-credit,
+  .footer-links a {
+    transition: none;
+  }
+}
